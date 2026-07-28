@@ -1,0 +1,42 @@
+{
+  "id": "microsoft_defender",
+  "name": "Microsoft Defender",
+  "name_en": "Microsoft Defender",
+  "version": "1.0.0",
+  "description": "Consulta de alertas de Defender for Endpoint: listar alertas, consultar una máquina, y aislar/liberar un dispositivo.",
+  "description_en": "Defender for Endpoint alert queries: list alerts, get a machine's details, and isolate/release a device.",
+  "category": "cybersecurity",
+  "category_en": "cybersecurity",
+  "keywords": ["microsoft defender", "defender for endpoint", "edr", "alertas", "alerts", "aislar", "isolate", "ciberseguridad", "cybersecurity", "azure"],
+  "icon": "icon.svg",
+  "library": {
+    "package": "ruvic-microsoft-defender-connector",
+    "install": "pip install git+https://github.com/tu-org/conector-microsoft-defender.git#subdirectory=lib",
+    "import_name": "ruvic_microsoft_defender_connector"
+  },
+  "auth_modes": [
+    {
+      "id": "azure_ad_app",
+      "label": "Azure AD App Registration",
+      "fields": [
+        { "key": "tenant_id", "label": "Tenant ID", "type": "text", "required": true },
+        { "key": "client_id", "label": "Client ID (Application ID)", "type": "text", "required": true },
+        { "key": "client_secret", "label": "Client Secret", "type": "password", "secret": true, "required": true },
+        { "key": "base_url", "label": "URL base de la API (opcional)", "type": "text", "required": false, "default": "https://api.securitycenter.microsoft.com", "help_text": "Puedes usar un endpoint regional más cercano (ej. us.api.security.microsoft.com) si tu tenant lo requiere." },
+        { "key": "allow_isolation", "label": "Permitir aislar/liberar dispositivos", "type": "boolean", "required": false, "default": "false", "help_text": "Acción de alto impacto (aísla la máquina de la red). Déjalo desactivado salvo que el caso de uso lo requiera explícitamente." },
+        { "key": "request_timeout", "label": "Timeout de peticiones (segundos)", "type": "number", "required": false, "default": "30" }
+      ]
+    }
+  ],
+  "env_prefix": "RUVIC_MS_DEFENDER_",
+  "operations": [
+    "cybersecurity.list_alerts",
+    "cybersecurity.get_machine_info",
+    "cybersecurity.set_device_isolation"
+  ],
+  "test_connection": true,
+  "docs": {
+    "skill": "SKILL.md",
+    "permissions_note": "La App Registration necesita los permisos de aplicación (no delegados) 'Alert.Read.All' y 'Machine.Read.All' en la API 'WindowsDefenderATP', con consentimiento de administrador otorgado. Solo agrega 'Machine.Isolate' si se va a activar el aislamiento. El aislamiento de dispositivos está bloqueado por defecto en este conector y requiere activarse explícitamente."
+  }
+}

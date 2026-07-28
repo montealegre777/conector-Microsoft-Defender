@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <title>Microsoft Defender</title>
+  <defs>
+    <linearGradient id="defender-grad" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4A90E2"/>
+      <stop offset="1" stop-color="#1B5E9F"/>
+    </linearGradient>
+  </defs>
+  <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 2.18l7 3.82v4c0 4.52-3.13 8.69-7 9.93-3.87-1.24-7-5.41-7-9.93V8l7-3.82z" fill="url(#defender-grad)"/>
+  <path d="M12 6L5 9.82V12c0 3.51 2.51 6.85 7 8.18 4.49-1.33 7-4.67 7-8.18V9.82L12 6zm-1 4h2v4h-2v-4zm0 5h2v2h-2v-2z" fill="#fff"/>
+</svg>
