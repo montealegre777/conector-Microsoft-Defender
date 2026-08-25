@@ -19,6 +19,7 @@ hardcodearlas.
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -36,6 +37,23 @@ from .exceptions import (
 from .logging_utils import get_logger
 
 _TOKEN_URL_TEMPLATE = "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
+
+_VALID_SEVERITIES = ("Informational", "Low", "Medium", "High")
+
+_MACHINE_ID_RE = re.compile(r"^[A-Za-z0-9\-_]+$")
+
+
+def _validate_machine_id(machine_id: str) -> str:
+    """Valida que machine_id sea un identificador seguro antes de
+    interpolarlo en una URL — evita que un valor malformado (ej. con
+    '../') redirija la petición a un endpoint distinto al esperado."""
+    cleaned = (machine_id or "").strip()
+    if not cleaned or not _MACHINE_ID_RE.match(cleaned):
+        raise DefenderDataError(
+            f"machine_id inválido: {machine_id!r}. Debe contener solo "
+            "letras, números, guiones y guiones bajos."
+        )
+    return cleaned
 
 
 class DefenderClient:
@@ -163,6 +181,11 @@ class DefenderClient:
             >>> client.list_alerts(severity="High", max_results=10)
             [{'id': '...', 'title': 'Suspicious activity', ...}, ...]
         """
+        if severity is not None and severity not in _VALID_SEVERITIES:
+            raise DefenderDataError(
+                f"severity inválido: {severity!r}. Debe ser uno de: {', '.join(_VALID_SEVERITIES)}."
+            )
+
         params: dict[str, Any] = {"$top": max_results}
         if severity:
             params["$filter"] = f"severity eq '{severity}'"
@@ -204,10 +227,9 @@ class DefenderClient:
             >>> client.get_machine_info("a1b2c3...")
             {'id': '...', 'computer_dns_name': 'WKS-001', ...}
         """
-        if not machine_id or not machine_id.strip():
-            raise DefenderDataError("machine_id no puede estar vacío.")
+        machine_id = _validate_machine_id(machine_id)
 
-        resp = self._request("GET", f"/api/machines/{machine_id.strip()}")
+        resp = self._request("GET", f"/api/machines/{machine_id}")
         if resp.status_code != 200:
             self._raise_for_error(resp, f"get_machine_info {machine_id}")
 
@@ -258,8 +280,7 @@ class DefenderClient:
                 "configuración del conector — es una acción de alto impacto "
                 "(aísla la máquina de la red)."
             )
-        if not machine_id or not machine_id.strip():
-            raise DefenderDataError("machine_id no puede estar vacío.")
+        machine_id = _validate_machine_id(machine_id)
 
         action = "isolate" if isolate else "unisolate"
         body: dict[str, Any] = {"Comment": comment}
@@ -267,7 +288,7 @@ class DefenderClient:
             body["IsolationType"] = "Full"
 
         resp = self._request(
-            "POST", f"/api/machines/{machine_id.strip()}/{action}", json=body
+            "POST", f"/api/machines/{machine_id}/{action}", json=body
         )
         if resp.status_code not in (200, 201):
             self._raise_for_error(resp, f"set_device_isolation {machine_id}")
